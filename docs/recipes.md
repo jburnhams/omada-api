@@ -30,7 +30,7 @@ The WAN port's own DNS fields are not in the open-API WAN settings (`internet/po
 omada-api schema post setting/lan/dns
 omada-api post setting/lan/dns --json '{"enable": true, "name": "unlock", "domain": "unlock.lan", "type": 0, "ipAddresses": ["192.168.0.50"], "lanNetworkIds": ["<network id>"]}' --yes
 ```
-Clients must use the router for DNS for these names to resolve.
+Clients must use the router for DNS for these names to resolve. A batch of new rules takes up to about half a minute to be answered, and a client that asked in that window may cache "no such name" for a few minutes. An alias (`"aliases": ["other.lan"]`) gives the same address a second name. Ask the router directly to check: send it a DNS query for the name rather than trusting the local cache.
 
 ## Remote logging (syslog)
 ```
