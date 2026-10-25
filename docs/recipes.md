@@ -37,7 +37,7 @@ Clients must use the router for DNS for these names to resolve.
 omada-api get remote-logging
 omada-api patch remote-logging --json '{"remoteLog": {"enable": true, "host": "192.168.0.50", "port": 5514, "moreClientLog": true, "resource": 0}}' --yes
 ```
-Needs a syslog receiver at that address and port (UDP), and any firewall there to allow it.
+Needs a syslog receiver at that address and port (UDP), and any firewall there to allow it. `omada-api syslog` is one (see the README).
 
 ## Quirks
 - List endpoints need `page` and `pageSize`; this tool adds them (100 per page) and reads every page.

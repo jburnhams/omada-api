@@ -5,7 +5,7 @@ import json
 import re
 import sys
 
-from . import config, spec as specmod
+from . import config, spec as specmod, syslog as syslogmod
 from .client import Session, pretty
 from .mask import mask
 
@@ -69,6 +69,10 @@ def cmd_schema(a):
         print("\n".join("  " + l for l in specmod.describe(sp, op.body)))
 
 
+def cmd_syslog(a):
+    syslogmod.serve(a.port, a.dir, a.keep_days)
+
+
 def cmd_call(a):
     target, sp = _load(a)
     op = specmod.find(specmod.ops(sp), a.method, a.path, a.version)
@@ -109,6 +113,9 @@ def build_parser():
     sub.add_parser("targets", help="list saved logins").set_defaults(fn=cmd_targets)
     p = sub.add_parser("find", help="search endpoints (site-level) by words in the path or summary"); p.add_argument("terms", nargs="+"); p.add_argument("--limit", type=int, default=40); p.set_defaults(fn=cmd_find)
     p = sub.add_parser("schema", help="what an endpoint takes: parameters and request body fields"); p.add_argument("method"); p.add_argument("path"); p.add_argument("--version"); p.set_defaults(fn=cmd_schema)
+    p = sub.add_parser("syslog", help="receive syslog from the router, switches and APs into one file per day (run it as a service; needs no login)")
+    p.add_argument("--port", type=int, default=5514, help="UDP port (default 5514, unprivileged)"); p.add_argument("--dir", default="~/.local/state/router-logs"); p.add_argument("--keep-days", type=int, default=60)
+    p.set_defaults(fn=cmd_syslog)
     for m in ("get", "post", "put", "patch", "delete"):
         p = sub.add_parser(m, help=f"{m.upper()} a site-relative path, e.g. `{m} remote-logging`")
         p.add_argument("path"); p.add_argument("-p", "--param", action="append", help="name=value: a query parameter, or the value of a {placeholder} in the path")

@@ -28,6 +28,15 @@ Paths are relative to the site (`remote-logging`, not `/openapi/v1/<id>/sites/<i
 
 See [docs/recipes.md](docs/recipes.md) for worked examples (DNS upstreams, DHCP reservations, static names, remote logging) and the quirks found on the way.
 
+## Syslog receiver
+
+`omada-api syslog` is a small receiver for the router's syslog: it listens on a UDP port (default 5514, no root needed), keeps one file a day under `~/.local/state/router-logs` (`<time> <sender> <message>`), accepts only LAN senders and deletes files older than `--keep-days` (60). It needs no login. Run it as a service ([contrib/omada-syslog.service](contrib/omada-syslog.service)), open the port in your firewall, then point the site at it:
+
+```
+omada-api patch remote-logging --json '{"remoteLog": {"enable": true, "host": "<this machine>", "port": 5514, "moreClientLog": true, "resource": 0}}' --yes
+```
+It is plain, unauthenticated UDP: keep it on the LAN.
+
 ## Notes
 
 - Writes change a live network. A wrong WAN setting can cut the internet; check the result of every write, and keep a way to undo it.

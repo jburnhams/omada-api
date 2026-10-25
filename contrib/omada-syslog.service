@@ -1,0 +1,14 @@
+# systemd user unit for `omada-api syslog` (copy to ~/.config/systemd/user/, then: systemctl --user enable --now omada-syslog)
+# Needs the omada-api command on the path of the unit's user; adjust ExecStart if it lives elsewhere.
+# `loginctl enable-linger $USER` keeps it running without a login. Open the port in the firewall for your LAN (UDP 5514).
+[Unit]
+Description=Omada syslog receiver (UDP 5514 -> ~/.local/state/router-logs)
+After=network-online.target
+
+[Service]
+ExecStart=%h/.local/bin/omada-api syslog --port 5514 --keep-days 60
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target
