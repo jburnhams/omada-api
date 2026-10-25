@@ -33,7 +33,7 @@ See [docs/recipes.md](docs/recipes.md) for worked examples (DNS upstreams, DHCP 
 `omada-api syslog` is a small receiver for the router's syslog: it listens on a UDP port (default 5514, no root needed), keeps one file a day under `~/.local/state/router-logs` (`<time> <sender> <message>`), accepts only LAN senders and deletes files older than `--keep-days` (60). It needs no login. Run it as a service ([contrib/omada-syslog.service](contrib/omada-syslog.service)), open the port in your firewall, then point the site at it:
 
 ```
-omada-api patch remote-logging --json '{"remoteLog": {"enable": true, "host": "<this machine>", "port": 5514, "moreClientLog": true, "resource": 0}}' --yes
+omada-api patch remote-logging --json '{"remoteLog": {"enable": true, "host": "<this machine>", "port": 5514, "moreClientLog": false, "resource": 0}}' --yes
 ```
 It is plain, unauthenticated UDP: keep it on the LAN.
 
