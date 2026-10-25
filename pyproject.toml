@@ -1,0 +1,24 @@
+[project]
+name = "omada-api"
+version = "0.1.0"
+description = "Spec-driven CLI for the TP-Link Omada controller API"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = ["tplink-omada-client>=1.5.13,<1.6"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+omada-api = "omada_api.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
