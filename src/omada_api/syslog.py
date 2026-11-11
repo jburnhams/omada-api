@@ -4,6 +4,7 @@ Point the site's remote logging at it (`omada-api patch remote-logging ...`, see
 `<local time> <sender address> <the message as sent>` in <dir>/YYYY-MM-DD.log; files older than `keep_days` are deleted when the day changes.
 Only private (LAN) sender addresses are accepted. Plain UDP syslog is unauthenticated and unencrypted: keep it on the LAN.
 """
+
 import datetime as dt
 import ipaddress
 import socket
@@ -35,7 +36,14 @@ def line(now: dt.datetime, addr: str, data: bytes) -> str:
     return f"{now:%Y-%m-%d %H:%M:%S} {addr} {text}\n"
 
 
-def serve(port: int = 5514, directory: str | Path = "~/.local/state/router-logs", keep_days: int = 60, stop: threading.Event | None = None, bind: str = "0.0.0.0", ready: threading.Event | None = None) -> None:
+def serve(
+    port: int = 5514,
+    directory: str | Path = "~/.local/state/router-logs",
+    keep_days: int = 60,
+    stop: threading.Event | None = None,
+    bind: str = "0.0.0.0",  # noqa: S104  (the router sends from the LAN; the receiver must listen on every interface)
+    ready: threading.Event | None = None,
+) -> None:
     """Receive until `stop` is set (never, by default). `ready` is set once the socket is bound."""
     d = Path(directory).expanduser()
     d.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -51,10 +59,10 @@ def serve(port: int = 5514, directory: str | Path = "~/.local/state/router-logs"
         while not stop.is_set():
             try:
                 data, (addr, _) = s.recvfrom(65535)
-            except socket.timeout:
+            except TimeoutError:
                 data = None
             now = dt.datetime.now()
-            if now.date() != day:                                    # a new day: new file, and delete the old ones
+            if now.date() != day:  # a new day: new file, and delete the old ones
                 if fh:
                     fh.close()
                 day = now.date()
@@ -66,7 +74,13 @@ def serve(port: int = 5514, directory: str | Path = "~/.local/state/router-logs"
             if not accept(addr):
                 dropped += 1
                 if dropped in (1, 100, 10000):
-                    print(f"omada-api syslog: ignored a message from non-LAN address {addr} ({dropped} so far)", file=sys.stderr, flush=True)
+                    print(
+                        f"omada-api syslog: ignored a message from non-LAN address {addr} ({dropped} so far)",
+                        file=sys.stderr,
+                        flush=True,
+                    )
+                continue
+            if fh is None:  # cannot happen: the first pass opens today's file above; this narrows the type
                 continue
             fh.write(line(now, addr, data))
     finally:

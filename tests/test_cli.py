@@ -8,9 +8,14 @@ from omada_api import cli, config
 class FakeSession:
     calls = []
 
-    def __init__(self, target): pass
-    async def __aenter__(self): return self
-    async def __aexit__(self, *a): return False
+    def __init__(self, target):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *a):
+        return False
 
     async def call(self, op, path, params, body):
         FakeSession.calls.append((op.method, path, params, body))
@@ -62,5 +67,7 @@ def test_path_placeholders_come_from_p_and_are_not_sent_as_query_parameters():
 
 
 def test_find_and_schema_print(capsys):
-    run("find", "lan", "dns"); assert "setting/lan/dns" in capsys.readouterr().out
-    run("schema", "patch", "remote-logging"); assert "enable: boolean" in capsys.readouterr().out
+    run("find", "lan", "dns")
+    assert "setting/lan/dns" in capsys.readouterr().out
+    run("schema", "patch", "remote-logging")
+    assert "enable: boolean" in capsys.readouterr().out

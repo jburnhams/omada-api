@@ -1,4 +1,5 @@
 """A logged-in session on the controller, calling the Open API paths through `tplink-omada-client`'s own login and session handling."""
+
 import json
 
 from tplink_omada_client.omadaclient import OmadaClient
@@ -12,10 +13,18 @@ class Session:
         self.target = target
 
     async def __aenter__(self):
-        self._client = OmadaClient(self.target.url, username=self.target.username, password=self.target.password, verify_ssl=self.target.verify_ssl)
+        self._client = OmadaClient(
+            self.target.url,
+            username=self.target.username,
+            password=self.target.password,
+            verify_ssl=self.target.verify_ssl,
+        )
         await self._client.__aenter__()
         site = await self._client.get_site_client(self.target.site)
-        self._api, self.site_id = site._api, site._site_id          # private attributes of tplink-omada-client (hence the pinned version range)
+        self._api, self.site_id = (
+            site._api,
+            site._site_id,
+        )  # private attributes of tplink-omada-client (hence the pinned version range)
         return self
 
     async def __aexit__(self, *exc):

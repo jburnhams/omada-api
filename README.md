@@ -9,7 +9,7 @@ Tested against a software controller 6.3.0.111 managing an ER605 v2. Treat it as
 ## Install
 
 ```
-pipx install git+https://github.com/jburnhams/omada-api     # or: pip install -e . in a clone
+pipx install git+https://github.com/jburnhams/omada-api     # or: uv sync in a clone, then uv run omada-api
 omada-api login home --url https://CONTROLLER:8043 --username USER --site "Site name"     # asks for the password
 ```
 The login is saved in `~/.omada.cfg`, mode 600 (plain text, the same file and format `tplink-omada-client`'s `omada` command uses, so both share it). Use a dedicated controller user with the least role you need (Viewer to read, Editor to change). Most controllers have a self-signed certificate, so the certificate is not checked unless you pass `--verify-ssl` to `login`.
@@ -46,6 +46,6 @@ It is plain, unauthenticated UDP: keep it on the LAN.
 ## Development
 
 ```
-python -m venv .venv && .venv/bin/pip install -e ".[test]" && .venv/bin/pytest
+uv sync && scripts/check          # lockfile, ruff, pyright, ty, then the tests with coverage (`uv run pytest` for the tests alone)
 ```
 MIT licensed.

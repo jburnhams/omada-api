@@ -3,12 +3,21 @@ name = "omada-api"
 version = "0.1.0"
 description = "Spec-driven CLI for the TP-Link Omada controller API"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"   # tplink-omada-client needs 3.13
 license = { text = "MIT" }
 dependencies = ["tplink-omada-client>=1.5.13,<1.6"]
 
-[project.optional-dependencies]
-test = ["pytest>=8"]
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-cov",
+    "pytest-randomly",
+    "pytest-timeout",
+    "ruff",
+    "pyright",
+    "ty",
+    "strata-python",     # only for its strata-check gate (scripts/check)
+]
 
 [project.scripts]
 omada-api = "omada_api.cli:main"
@@ -20,5 +29,53 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.uv.sources]
+# strata-python tracks main (no tag): uv.lock pins the commit, `uv lock --upgrade-package strata-python` moves it
+strata-python = { git = "https://github.com/jburnhams/strata-python" }
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-ra --timeout=300 --strict-markers"
+
+[tool.coverage.run]
+source = ["omada_api"]
+branch = true
+
+[tool.coverage.report]
+skip_empty = true
+fail_under = 75   # measured 79%; only ratchets up
+
+[tool.strata-check]
+paths = ["src", "tests"]
+tests = "tests"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "C4", "PT", "S", "TID"]
+ignore = [
+    "E501",    # the formatter wraps code; long comments and docstrings stay
+    "C408",    # dict(a=1) calls are the house style for records
+    "PT018",   # `assert a and b` is kept: one line says what holds
+    "E741",    # one-letter names in short comprehensions
+    "SIM115",  # files opened for the life of an object are closed by it
+    "RUF012",  # mutable class attributes in test fakes
+]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"pytest.importorskip".msg = "Do not skip when a dependency is missing: install it and let the test fail. A deliberate skip is a marker with a reason and a switch."
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S104", "S105", "S106", "S108"]
+
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.13"
+typeCheckingMode = "basic"
+# Ratchet: files listed here are checked strictly; add a file once it is fully annotated, never remove one.
+strict = []

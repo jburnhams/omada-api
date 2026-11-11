@@ -32,6 +32,13 @@ def test_a_list_endpoint_with_page_and_pagesize_is_paged_and_path_params_are_kep
 
 def test_describe_follows_refs_and_unknown_keys_are_reported(spec):
     op = S.find(S.ops(spec), "patch", "remote-logging")
-    assert S.describe(spec, op.body) == ["remoteLog: object", "  enable: boolean - on", "  host: string", "  password: string"]
+    assert S.describe(spec, op.body) == [
+        "remoteLog: object",
+        "  enable: boolean - on",
+        "  host: string",
+        "  password: string",
+    ]
     assert S.unknown_keys(spec, op, {"remoteLog": {}, "oops": 1}) == ["oops"]
-    assert S.unknown_keys(spec, S.find(S.ops(spec), "get", "remote-logging"), {"anything": 1}) == []      # no declared fields: nothing to check against
+    assert (
+        S.unknown_keys(spec, S.find(S.ops(spec), "get", "remote-logging"), {"anything": 1}) == []
+    )  # no declared fields: nothing to check against
