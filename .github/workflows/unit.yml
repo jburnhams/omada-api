@@ -1,0 +1,32 @@
+name: Unit tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: unit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.13']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Lockfile, lint, format and types (once, on the newest Python)
+        if: matrix.python-version == '3.13' && matrix.os == 'ubuntu-latest'
+        run: uv run --no-sync strata-check --fast
+      - name: Tests with coverage
+        run: uv run --no-sync pytest --cov --cov-report=term
